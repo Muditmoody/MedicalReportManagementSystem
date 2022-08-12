@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Operations Version="1.0" xmlns="http://schemas.microsoft.com/sqlserver/dac/Serialization/2012/02">
+  <Operation Name="Rename Refactor" Key="413cf7e8-b6e7-4212-b284-07885b85d501" ChangeDateTime="08/12/2022 17:18:54">
+    <Property Name="ElementName" Value="[dbo].[Patient].[Id]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Patient]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="Patient Id" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="8ee183cc-006c-45ba-a3a2-3527b3e1bb69" ChangeDateTime="08/12/2022 17:19:07">
+    <Property Name="ElementName" Value="[dbo].[Patient].[Patient Id]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Patient]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="Patient_Id" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="ded2eb36-e833-4fbf-a804-39cec8477abe" ChangeDateTime="08/12/2022 17:19:11">
+    <Property Name="ElementName" Value="[dbo].[Patient].[Patient Name]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Patient]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="Patient_Name" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="b270ebe6-b55a-47b1-967c-ff8fecfc09a0" ChangeDateTime="08/12/2022 17:19:16">
+    <Property Name="ElementName" Value="[dbo].[Patient].[Date of birth]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Patient]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="Date_of_birth" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="f308f335-8699-42e9-b081-d5887452a35f" ChangeDateTime="08/12/2022 17:34:28">
+    <Property Name="ElementName" Value="[dbo].[MedicalReport].[Id]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[MedicalReport]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="Report_Id" />
+  </Operation>
+</Operations>
