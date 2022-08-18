@@ -60,6 +60,8 @@
     <Folder Include="dbo\Tables" />
     <Folder Include="dbo\Views" />
     <Folder Include="dbo\Procedures" />
+    <Folder Include="dbo\DataSeed" />
+    <Folder Include="dbo\PostDeployment" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\Tables\Patient.sql" />
@@ -86,5 +88,19 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="MedicalReportManagementSystem.publish.xml" />
+    <None Include="dbo\DataSeed\Patient.merge.data.sql" />
+    <None Include="dbo\DataSeed\City.merge.data.sql" />
+    <None Include="dbo\DataSeed\Gender.merge.data.sql" />
+    <None Include="dbo\DataSeed\Hospital.merge.data.sql" />
+    <None Include="dbo\DataSeed\Hospital_Physician.merge.data.sql" />
+    <None Include="dbo\DataSeed\Hospital_Procedure.merge.data.sql" />
+    <None Include="dbo\DataSeed\Insurance_Policy.merge.data.sql" />
+    <None Include="dbo\DataSeed\Insurer.merge.data.sql" />
+    <None Include="dbo\DataSeed\Medical_Procedure.merge.data.sql" />
+    <None Include="dbo\DataSeed\Medical_Report.merge.data.sql" />
+    <None Include="dbo\DataSeed\Medicine.merge.data.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <PostDeploy Include="dbo\PostDeployment\Script.PostDeployment.sql" />
   </ItemGroup>
 </Project>
