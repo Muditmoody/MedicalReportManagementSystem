@@ -52,21 +52,11 @@ The type for column Primary_Contact in table [dbo].[Patient] is currently  VARCH
 The type for column Secondary_Contact in table [dbo].[Patient] is currently  VARCHAR (50) NULL but is being changed to  INT NULL. Data loss could occur and deployment may fail if the column contains data that is incompatible with type  INT NULL.
 */
 
-IF EXISTS (select top 1 1 from [dbo].[Patient])
-    RAISERROR (N'Rows were detected. The schema update is terminating because data loss might occur.', 16, 127) WITH NOWAIT
+PRINT N'Creating table [dbo].[Patient]...';
 
 GO
-PRINT N'Starting rebuilding table [dbo].[Patient]...';
 
-
-GO
-BEGIN TRANSACTION;
-
-SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-
-SET XACT_ABORT ON;
-
-CREATE TABLE [dbo].[tmp_ms_xx_Patient] (
+CREATE TABLE [dbo].[Patient] (
     [Patient_ID]        INT           IDENTITY (1, 1) NOT NULL,
     [First_Name]        VARCHAR (100) NOT NULL,
     [Last_Name]         VARCHAR (100) NULL,
@@ -76,33 +66,8 @@ CREATE TABLE [dbo].[tmp_ms_xx_Patient] (
     [Province_ID]       INT           NULL,
     [Primary_Contact]   INT           NULL,
     [Secondary_Contact] INT           NULL,
-    CONSTRAINT [tmp_ms_xx_constraint_PK_Patient1] PRIMARY KEY CLUSTERED ([Patient_ID] ASC)
+    CONSTRAINT [PK_Patient1] PRIMARY KEY CLUSTERED ([Patient_ID] ASC)
 );
-
-IF EXISTS (SELECT TOP 1 1 
-           FROM   [dbo].[Patient])
-    BEGIN
-        SET IDENTITY_INSERT [dbo].[tmp_ms_xx_Patient] ON;
-        INSERT INTO [dbo].[tmp_ms_xx_Patient] ([Patient_ID], [Date_of_birth], [Gender], [Primary_Contact], [Secondary_Contact])
-        SELECT   [Patient_ID],
-                 [Date_of_birth],
-                 [Gender],
-                 [Primary_Contact],
-                 [Secondary_Contact]
-        FROM     [dbo].[Patient]
-        ORDER BY [Patient_ID] ASC;
-        SET IDENTITY_INSERT [dbo].[tmp_ms_xx_Patient] OFF;
-    END
-
-DROP TABLE [dbo].[Patient];
-
-EXECUTE sp_rename N'[dbo].[tmp_ms_xx_Patient]', N'Patient';
-
-EXECUTE sp_rename N'[dbo].[tmp_ms_xx_constraint_PK_Patient1]', N'PK_Patient', N'OBJECT';
-
-COMMIT TRANSACTION;
-
-SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
 
 
 GO
