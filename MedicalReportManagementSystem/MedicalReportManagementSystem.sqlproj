@@ -110,6 +110,7 @@
     <None Include="dbo\DataSeed\Specialization.merge.data.sql" />
     <None Include="dbo\DataSeed\Report_Procedure.merge.data.sql" />
     <None Include="dbo\DataSeed\MedicalCondition.merge.data.sql" />
+    <None Include="dbo\WholeDbScript.sql" />
   </ItemGroup>
   <ItemGroup>
     <PostDeploy Include="dbo\PostDeployment\Script.PostDeployment.sql" />
