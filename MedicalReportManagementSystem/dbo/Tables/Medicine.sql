@@ -7,6 +7,7 @@
 	[Side_Effects]			VARCHAR(500),
 	[Comments]				VARCHAR(500),
 	[MedicalCondition_ID]	INT,
+	[Med_Price]				DECIMAL(10,2)
 
 	CONSTRAINT PK_Medicine PRIMARY KEY (Medicine_ID),
 	CONSTRAINT FK_Medicine_MedicalCondition FOREIGN KEY (MedicalCondition_ID) REFERENCES MedicalCondition(MedicalCondition_ID)

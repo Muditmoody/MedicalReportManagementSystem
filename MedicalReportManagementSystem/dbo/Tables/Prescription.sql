@@ -3,7 +3,7 @@
 	[Prescription_ID]			INT NOT NULL IDENTITY(1,1),
 	[Report_ID]					INT,
 	[Medicine_ID]				INT,
-	[Dosage]					VARCHAR(50),
+	[Dosage]					DECIMAL(10,4),
 	[Prescription_Start_Date]	DATETIME,
 	[Prescription_End_Date]		DATETIME,
 	[Comments]					VARCHAR(100),

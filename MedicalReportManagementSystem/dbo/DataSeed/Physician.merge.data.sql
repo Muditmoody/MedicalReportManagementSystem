@@ -1,6 +1,10 @@
 ﻿MERGE INTO Physician AS Target
 USING (VALUES
-	(1, '','',1,1,'')
+	(1, 'Mario'	   , 'Dupont'	, 1, 1, '+1-4385550182'),
+	(2, 'Gabriel'  , 'Ong'		, 5, 6, '+1-6045100193'),
+	(3, 'Linnea'   , 'Yalong'	, 1, 1, '+1-5140397741'),
+	(4, 'Srudhi'   , 'Kumar'	, 4, 2, '+1-4160586308'),
+	(5, 'Karim'    , 'Ahmed'	, 1, 1, '+1-4387709322')
 )
 AS Source (
 			[Physician_ID],
@@ -22,7 +26,6 @@ UPDATE SET  [First_Name]         = Source.[First_Name],
 
 WHEN NOT MATCHED BY Target THEN
 INSERT (
-		[Physician_ID],
 		[First_Name],
 		[Last_Name],
 		[City_ID],
@@ -32,7 +35,6 @@ INSERT (
 
 		VALUES
 		(
-		Source.[Physician_ID],
 		Source.[First_Name],
 		Source.[Last_Name],
 		Source.[City_ID],

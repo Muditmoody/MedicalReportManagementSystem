@@ -1,6 +1,10 @@
 ﻿MERGE INTO Specialization AS Target
 USING (VALUES
-	(1, '','')
+	(1, 'Oncology'		,'5'),
+	(2, 'Dermatology' 	,'2'),
+	(3, 'Opthalmology'  ,'3'),
+	(4, 'Cardiology'	,'9'),
+	(5, 'Neurology'		,'6')
 )
 AS Source (
 			[Specialization_ID],
@@ -16,13 +20,11 @@ UPDATE SET [Name]		= Source.[Name],
 
 WHEN NOT MATCHED BY Target THEN
 INSERT (
-		[Specialization_ID],
 		[Name],
 		[Department]
 		)
 		VALUES
 		(
-		Source.[Specialization_ID],
 		Source.[Name],
 		Source.[Department]
 		)

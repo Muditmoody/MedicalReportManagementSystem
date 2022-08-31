@@ -9,5 +9,4 @@
     CONSTRAINT PK_Insurer PRIMARY KEY (Insurer_ID),
     CONSTRAINT FK_City_Insurer FOREIGN KEY (City_ID) REFERENCES [City](City_ID),
     CONSTRAINT FK_Province_Insurer FOREIGN KEY (Province_ID) REFERENCES [Province](Province_ID)
-
 )

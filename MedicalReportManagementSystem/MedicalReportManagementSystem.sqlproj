@@ -103,12 +103,13 @@
     <None Include="dbo\DataSeed\Medical_Report.merge.data.sql" />
     <None Include="dbo\DataSeed\Medicine.merge.data.sql" />
     <None Include="dbo\DataSeed\Physician.merge.data.sql" />
-    <None Include="dbo\DataSeed\Physician_Procedure.merge.data.sql" />
     <None Include="dbo\DataSeed\Physician_Specialization.merge.data.sql" />
+    <None Include="dbo\DataSeed\Physician_Procedure.merge.data.sql" />
     <None Include="dbo\DataSeed\Prescription.merge.data.sql" />
     <None Include="dbo\DataSeed\Province.merge.data.sql" />
     <None Include="dbo\DataSeed\Specialization.merge.data.sql" />
     <None Include="dbo\DataSeed\Report_Procedure.merge.data.sql" />
+    <None Include="dbo\DataSeed\MedicalCondition.merge.data.sql" />
   </ItemGroup>
   <ItemGroup>
     <PostDeploy Include="dbo\PostDeployment\Script.PostDeployment.sql" />

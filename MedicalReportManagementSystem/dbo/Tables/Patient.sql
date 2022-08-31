@@ -7,8 +7,8 @@
     [Gender]            INT,
     [City_ID]           INT,
     [Province_ID]       INT,
-    [Primary_Contact]   INT,
-    [Secondary_Contact] INT,
+    [Primary_Contact]   VARCHAR(50),
+    [Secondary_Contact] VARCHAR(50),
 
     CONSTRAINT PK_Patient PRIMARY KEY (Patient_ID),
     CONSTRAINT FK_Gender_Patient FOREIGN KEY (Gender) REFERENCES [Gender](Gender_ID),

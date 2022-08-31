@@ -1,6 +1,11 @@
 ﻿MERGE INTO Gender AS Target
 USING (VALUES
-	(1, '')
+	(1, 'Male'),
+	(2, 'Female'),
+	(3, 'Gay/Non-Binary'),
+	(4, 'Lesbian/Non-Binary'),
+	(5, 'Bisexual'),
+	(6, 'Tran-sexual')
 )
 
 AS Source (
@@ -15,12 +20,10 @@ UPDATE SET [Gender_Name] = Source.[Gender_Name]
 
 WHEN NOT MATCHED BY Target THEN
 INSERT (
-		[Gender_ID],
 		[Gender_Name]
 		)
 		VALUES
 		(
-		Source.[Gender_ID],
 		Source.[Gender_Name]
 		)
 
