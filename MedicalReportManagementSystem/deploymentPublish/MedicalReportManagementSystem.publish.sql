@@ -24,7 +24,7 @@ GO
 /*
 Detect SQLCMD mode and disable script execution if SQLCMD mode is not supported.
 To re-enable the script after enabling SQLCMD mode, execute the following:
-SET NOEXEC OFF; 
+SET NOEXEC OFF;
 */
 :setvar __IsSqlCmdEnabled "True"
 GO
@@ -40,23 +40,89 @@ USE [$(DatabaseName)];
 
 
 GO
-/*
-The column [dbo].[Patient].[Patient_Name] is being dropped, data loss could occur.
+PRINT N'Dropping Default Constraint [dbo].[DF_physician_emp_start_date]...';
 
-The column [dbo].[Patient].[First_Name] on table [dbo].[Patient] must be added, but the column has no default value and does not allow NULL values. If the table contains data, the ALTER script will not work. To avoid this issue you must either: add a default value to the column, mark it as allowing NULL values, or enable the generation of smart-defaults as a deployment option.
-
-The type for column Gender in table [dbo].[Patient] is currently  CHAR (1) NULL but is being changed to  INT NULL. Data loss could occur and deployment may fail if the column contains data that is incompatible with type  INT NULL.
-
-The type for column Primary_Contact in table [dbo].[Patient] is currently  VARCHAR (50) NULL but is being changed to  INT NULL. Data loss could occur and deployment may fail if the column contains data that is incompatible with type  INT NULL.
-
-The type for column Secondary_Contact in table [dbo].[Patient] is currently  VARCHAR (50) NULL but is being changed to  INT NULL. Data loss could occur and deployment may fail if the column contains data that is incompatible with type  INT NULL.
-*/
-
-PRINT N'Creating table [dbo].[Patient]...';
 
 GO
+ALTER TABLE [dbo].[Hospital_Physician] DROP CONSTRAINT [DF_physician_emp_start_date];
 
-CREATE TABLE [dbo].[Patient] (
+
+GO
+PRINT N'Dropping Default Constraint [dbo].[DF_Policy_Start]...';
+
+
+GO
+ALTER TABLE [dbo].[Insurance_Policy] DROP CONSTRAINT [DF_Policy_Start];
+
+
+GO
+PRINT N'Dropping Default Constraint [dbo].[DF_Report_Date]...';
+
+
+GO
+ALTER TABLE [dbo].[Medical_Report] DROP CONSTRAINT [DF_Report_Date];
+
+
+GO
+PRINT N'Dropping Default Constraint [dbo].[DF_Procedure_Date]...';
+
+
+GO
+ALTER TABLE [dbo].[Report_Procedure] DROP CONSTRAINT [DF_Procedure_Date];
+
+
+GO
+PRINT N'Dropping Foreign Key [dbo].[FK_Policy_Patient]...';
+
+
+GO
+ALTER TABLE [dbo].[Insurance_Policy] DROP CONSTRAINT [FK_Policy_Patient];
+
+
+GO
+PRINT N'Dropping Foreign Key [dbo].[FK_MedicalReport_Patient]...';
+
+
+GO
+ALTER TABLE [dbo].[Medical_Report] DROP CONSTRAINT [FK_MedicalReport_Patient];
+
+
+GO
+PRINT N'Dropping Foreign Key [dbo].[FK_City_Patient]...';
+
+
+GO
+ALTER TABLE [dbo].[Patient] DROP CONSTRAINT [FK_City_Patient];
+
+
+GO
+PRINT N'Dropping Foreign Key [dbo].[FK_Gender_Patient]...';
+
+
+GO
+ALTER TABLE [dbo].[Patient] DROP CONSTRAINT [FK_Gender_Patient];
+
+
+GO
+PRINT N'Dropping Foreign Key [dbo].[FK_Province_Patient]...';
+
+
+GO
+ALTER TABLE [dbo].[Patient] DROP CONSTRAINT [FK_Province_Patient];
+
+
+GO
+PRINT N'Starting rebuilding table [dbo].[Patient]...';
+
+
+GO
+BEGIN TRANSACTION;
+
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+
+SET XACT_ABORT ON;
+
+CREATE TABLE [dbo].[tmp_ms_xx_Patient] (
     [Patient_ID]        INT           IDENTITY (1, 1) NOT NULL,
     [First_Name]        VARCHAR (100) NOT NULL,
     [Last_Name]         VARCHAR (100) NULL,
@@ -64,261 +130,39 @@ CREATE TABLE [dbo].[Patient] (
     [Gender]            INT           NULL,
     [City_ID]           INT           NULL,
     [Province_ID]       INT           NULL,
-    [Primary_Contact]   INT           NULL,
-    [Secondary_Contact] INT           NULL,
-    CONSTRAINT [PK_Patient1] PRIMARY KEY CLUSTERED ([Patient_ID] ASC)
+    [Primary_Contact]   VARCHAR (50)  NULL,
+    [Secondary_Contact] VARCHAR (50)  NULL,
+    CONSTRAINT [tmp_ms_xx_constraint_PK_Patient1] PRIMARY KEY CLUSTERED ([Patient_ID] ASC)
 );
 
-
-GO
-PRINT N'Creating Table [dbo].[City]...';
-
-
-GO
-CREATE TABLE [dbo].[City] (
-    [City_ID]   INT          IDENTITY (1, 1) NOT NULL,
-    [City_Name] VARCHAR (50) NULL,
-    CONSTRAINT [PK_City] PRIMARY KEY CLUSTERED ([City_ID] ASC)
-);
-
-
-GO
-PRINT N'Creating Table [dbo].[Gender]...';
-
-
-GO
-CREATE TABLE [dbo].[Gender] (
-    [Gender_ID]   INT          IDENTITY (1, 1) NOT NULL,
-    [Gender_Name] VARCHAR (10) NULL,
-    CONSTRAINT [PK_Gender] PRIMARY KEY CLUSTERED ([Gender_ID] ASC)
-);
-
-
-GO
-PRINT N'Creating Table [dbo].[Hospital]...';
-
-
-GO
-CREATE TABLE [dbo].[Hospital] (
-    [Hospital_ID]   INT           IDENTITY (1, 1) NOT NULL,
-    [Hospital_Name] VARCHAR (100) NULL,
-    [City_ID]       INT           NULL,
-    [Province_ID]   INT           NULL,
-    [Contact]       VARCHAR (50)  NULL,
-    CONSTRAINT [PK_Hospital] PRIMARY KEY CLUSTERED ([Hospital_ID] ASC)
-);
-
-
-GO
-PRINT N'Creating Table [dbo].[Hospital_Physician]...';
-
-
-GO
-CREATE TABLE [dbo].[Hospital_Physician] (
-    [Hospital_ID]           INT      NOT NULL,
-    [Physician_ID]          INT      NOT NULL,
-    [Employment_Start_Date] DATETIME NULL,
-    CONSTRAINT [PK_Hospital_Physician_Mapping] PRIMARY KEY CLUSTERED ([Hospital_ID] ASC, [Physician_ID] ASC)
-);
-
-
-GO
-PRINT N'Creating Table [dbo].[Hospital_Procedure]...';
-
-
-GO
-CREATE TABLE [dbo].[Hospital_Procedure] (
-    [Hospital_ID]  INT NOT NULL,
-    [Procedure_ID] INT NOT NULL,
-    CONSTRAINT [PK_Hospital_Procedure_Mapping] PRIMARY KEY CLUSTERED ([Hospital_ID] ASC, [Procedure_ID] ASC)
-);
-
-
-GO
-PRINT N'Creating Table [dbo].[Insurance_Policy]...';
-
-
-GO
-CREATE TABLE [dbo].[Insurance_Policy] (
-    [Policy_ID]               INT           IDENTITY (1, 1) NOT NULL,
-    [Policy_Reference_Number] VARCHAR (100) NULL,
-    [Patient_ID]              INT           NULL,
-    [Insurer_ID]              INT           NULL,
-    [Policy_Start_Date]       DATETIME      NULL,
-    [Policy_End_Date]         DATETIME      NULL,
-    [Comments]                VARCHAR (500) NULL,
-    CONSTRAINT [PK_Insurance_Policy] PRIMARY KEY CLUSTERED ([Policy_ID] ASC)
-);
-
-
-GO
-PRINT N'Creating Table [dbo].[Insurer]...';
-
-
-GO
-CREATE TABLE [dbo].[Insurer] (
-    [Insurer_ID]   INT           IDENTITY (1, 1) NOT NULL,
-    [Insurer_Name] VARCHAR (100) NULL,
-    [City_ID]      INT           NULL,
-    [Province_ID]  INT           NULL,
-    [Contact]      VARCHAR (100) NULL,
-    CONSTRAINT [PK_Insurer] PRIMARY KEY CLUSTERED ([Insurer_ID] ASC)
-);
-
-
-GO
-PRINT N'Creating Table [dbo].[Medical_Procedure]...';
-
-
-GO
-CREATE TABLE [dbo].[Medical_Procedure] (
-    [Procedure_ID]   INT           IDENTITY (1, 1) NOT NULL,
-    [Procedure_Name] VARCHAR (100) NULL,
-    CONSTRAINT [PK_Procedure] PRIMARY KEY CLUSTERED ([Procedure_ID] ASC)
-);
-
-
-GO
-PRINT N'Creating Table [dbo].[Medical_Report]...';
-
-
-GO
-CREATE TABLE [dbo].[Medical_Report] (
-    [Report_ID]           INT      IDENTITY (1, 1) NOT NULL,
-    [Patient_ID]          INT      NOT NULL,
-    [Report_Date]         DATETIME NULL,
-    [Physician_ID]        INT      NULL,
-    [Hospital_ID]         INT      NULL,
-    [IsValid]             BIT      NULL,
-    [MedicalCondition_ID] INT      NULL,
-    CONSTRAINT [PK_Medical_Report] PRIMARY KEY CLUSTERED ([Report_ID] ASC)
-);
-
-
-GO
-PRINT N'Creating Table [dbo].[MedicalCondition]...';
-
-
-GO
-CREATE TABLE [dbo].[MedicalCondition] (
-    [MedicalCondition_ID] INT          IDENTITY (1, 1) NOT NULL,
-    [Condition_Name]      VARCHAR (50) NULL,
-    CONSTRAINT [PK_MedicalCondition] PRIMARY KEY CLUSTERED ([MedicalCondition_ID] ASC)
-);
-
-
-GO
-PRINT N'Creating Table [dbo].[Medicine]...';
-
-
-GO
-CREATE TABLE [dbo].[Medicine] (
-    [Medicine_ID]         INT           IDENTITY (1, 1) NOT NULL,
-    [Medicine_Name]       VARCHAR (100) NULL,
-    [Composition]         VARCHAR (500) NULL,
-    [Potency]             VARCHAR (10)  NULL,
-    [Side_Effects]        VARCHAR (500) NULL,
-    [Comments]            VARCHAR (500) NULL,
-    [MedicalCondition_ID] INT           NULL,
-    CONSTRAINT [PK_Medicine] PRIMARY KEY CLUSTERED ([Medicine_ID] ASC)
-);
-
-
-GO
-PRINT N'Creating Table [dbo].[Physician]...';
-
-
-GO
-CREATE TABLE [dbo].[Physician] (
-    [Physician_ID] INT          IDENTITY (1, 1) NOT NULL,
-    [First_Name]   VARCHAR (50) NULL,
-    [Last_Name]    VARCHAR (50) NULL,
-    [City_ID]      INT          NULL,
-    [Province_ID]  INT          NULL,
-    [Contact]      VARCHAR (50) NULL,
-    CONSTRAINT [PK_Physician] PRIMARY KEY CLUSTERED ([Physician_ID] ASC)
-);
-
-
-GO
-PRINT N'Creating Table [dbo].[Physician_Procedure]...';
-
-
-GO
-CREATE TABLE [dbo].[Physician_Procedure] (
-    [Physician_ID] INT NOT NULL,
-    [Procedure_ID] INT NOT NULL,
-    CONSTRAINT [PK_Physician_Procedure_Mapping] PRIMARY KEY CLUSTERED ([Physician_ID] ASC, [Procedure_ID] ASC)
-);
-
-
-GO
-PRINT N'Creating Table [dbo].[Physician_Specilization]...';
-
-
-GO
-CREATE TABLE [dbo].[Physician_Specilization] (
-    [Physician_ID]      INT          NOT NULL,
-    [Specialization_ID] INT          NOT NULL,
-    [Proficiency]       VARCHAR (50) NULL,
-    CONSTRAINT [PK_Physician_Specialization] PRIMARY KEY CLUSTERED ([Physician_ID] ASC, [Specialization_ID] ASC)
-);
-
-
-GO
-PRINT N'Creating Table [dbo].[Prescription]...';
-
-
-GO
-CREATE TABLE [dbo].[Prescription] (
-    [Prescription_ID]         INT           IDENTITY (1, 1) NOT NULL,
-    [Report_ID]               INT           NULL,
-    [Medicine_ID]             INT           NULL,
-    [Dosage]                  VARCHAR (50)  NULL,
-    [Prescription_Start_Date] DATETIME      NULL,
-    [Prescription_End_Date]   DATETIME      NULL,
-    [Comments]                VARCHAR (100) NULL,
-    CONSTRAINT [PK_Prescription] PRIMARY KEY CLUSTERED ([Prescription_ID] ASC)
-);
-
-
-GO
-PRINT N'Creating Table [dbo].[Province]...';
-
-
-GO
-CREATE TABLE [dbo].[Province] (
-    [Province_ID]   INT          IDENTITY (1, 1) NOT NULL,
-    [Province_Name] VARCHAR (50) NULL,
-    CONSTRAINT [PK_Province] PRIMARY KEY CLUSTERED ([Province_ID] ASC)
-);
-
-
-GO
-PRINT N'Creating Table [dbo].[Report_Procedure]...';
-
-
-GO
-CREATE TABLE [dbo].[Report_Procedure] (
-    [Report_Procedure_ID] INT      IDENTITY (1, 1) NOT NULL,
-    [Procedure_ID]        INT      NULL,
-    [Report_ID]           INT      NULL,
-    [Procedure_Date]      DATETIME NULL,
-    CONSTRAINT [PK_Report_Procedure] PRIMARY KEY CLUSTERED ([Report_Procedure_ID] ASC)
-);
-
-
-GO
-PRINT N'Creating Table [dbo].[Specialization]...';
-
-
-GO
-CREATE TABLE [dbo].[Specialization] (
-    [Specialization_ID] INT           IDENTITY (1, 1) NOT NULL,
-    [Name]              VARCHAR (100) NULL,
-    [Department]        VARCHAR (100) NULL,
-    CONSTRAINT [PK_Specialization] PRIMARY KEY CLUSTERED ([Specialization_ID] ASC)
-);
+IF EXISTS (SELECT TOP 1 1
+           FROM   [dbo].[Patient])
+    BEGIN
+        SET IDENTITY_INSERT [dbo].[tmp_ms_xx_Patient] ON;
+        INSERT INTO [dbo].[tmp_ms_xx_Patient] ([Patient_ID], [First_Name], [Last_Name], [Date_of_birth], [Gender], [City_ID], [Province_ID], [Primary_Contact], [Secondary_Contact])
+        SELECT   [Patient_ID],
+                 [First_Name],
+                 [Last_Name],
+                 [Date_of_birth],
+                 [Gender],
+                 [City_ID],
+                 [Province_ID],
+                 [Primary_Contact],
+                 [Secondary_Contact]
+        FROM     [dbo].[Patient]
+        ORDER BY [Patient_ID] ASC;
+        SET IDENTITY_INSERT [dbo].[tmp_ms_xx_Patient] OFF;
+    END
+
+DROP TABLE [dbo].[Patient];
+
+EXECUTE sp_rename N'[dbo].[tmp_ms_xx_Patient]', N'Patient';
+
+EXECUTE sp_rename N'[dbo].[tmp_ms_xx_constraint_PK_Patient1]', N'PK_Patient', N'OBJECT';
+
+COMMIT TRANSACTION;
+
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
 
 
 GO
@@ -349,102 +193,12 @@ ALTER TABLE [dbo].[Medical_Report]
 
 
 GO
-PRINT N'Creating Default Constraint [dbo].[df_IsValid]...';
-
-
-GO
-ALTER TABLE [dbo].[Medical_Report]
-    ADD CONSTRAINT [df_IsValid] DEFAULT ('Y') FOR [IsValid];
-
-
-GO
 PRINT N'Creating Default Constraint [dbo].[DF_Procedure_Date]...';
 
 
 GO
 ALTER TABLE [dbo].[Report_Procedure]
     ADD CONSTRAINT [DF_Procedure_Date] DEFAULT (CURRENT_TIMESTAMP) FOR [Procedure_Date];
-
-
-GO
-PRINT N'Creating Foreign Key [dbo].[FK_Gender_Patient]...';
-
-
-GO
-ALTER TABLE [dbo].[Patient] WITH NOCHECK
-    ADD CONSTRAINT [FK_Gender_Patient] FOREIGN KEY ([Gender]) REFERENCES [dbo].[Gender] ([Gender_ID]);
-
-
-GO
-PRINT N'Creating Foreign Key [dbo].[FK_City_Patient]...';
-
-
-GO
-ALTER TABLE [dbo].[Patient] WITH NOCHECK
-    ADD CONSTRAINT [FK_City_Patient] FOREIGN KEY ([City_ID]) REFERENCES [dbo].[City] ([City_ID]);
-
-
-GO
-PRINT N'Creating Foreign Key [dbo].[FK_Province_Patient]...';
-
-
-GO
-ALTER TABLE [dbo].[Patient] WITH NOCHECK
-    ADD CONSTRAINT [FK_Province_Patient] FOREIGN KEY ([Province_ID]) REFERENCES [dbo].[Province] ([Province_ID]);
-
-
-GO
-PRINT N'Creating Foreign Key [dbo].[FK_City_Hospital]...';
-
-
-GO
-ALTER TABLE [dbo].[Hospital] WITH NOCHECK
-    ADD CONSTRAINT [FK_City_Hospital] FOREIGN KEY ([City_ID]) REFERENCES [dbo].[City] ([City_ID]);
-
-
-GO
-PRINT N'Creating Foreign Key [dbo].[FK_Province_Hospital]...';
-
-
-GO
-ALTER TABLE [dbo].[Hospital] WITH NOCHECK
-    ADD CONSTRAINT [FK_Province_Hospital] FOREIGN KEY ([Province_ID]) REFERENCES [dbo].[Province] ([Province_ID]);
-
-
-GO
-PRINT N'Creating Foreign Key [dbo].[FK_Hospital_Physician_Hospital]...';
-
-
-GO
-ALTER TABLE [dbo].[Hospital_Physician] WITH NOCHECK
-    ADD CONSTRAINT [FK_Hospital_Physician_Hospital] FOREIGN KEY ([Hospital_ID]) REFERENCES [dbo].[Hospital] ([Hospital_ID]);
-
-
-GO
-PRINT N'Creating Foreign Key [dbo].[FK_Hospital_Physician_Physician]...';
-
-
-GO
-ALTER TABLE [dbo].[Hospital_Physician] WITH NOCHECK
-    ADD CONSTRAINT [FK_Hospital_Physician_Physician] FOREIGN KEY ([Physician_ID]) REFERENCES [dbo].[Physician] ([Physician_ID]);
-
-
-GO
-PRINT N'Creating Foreign Key [dbo].[FK_Hospital_Procedure_Hospital]...';
-
-
-GO
-ALTER TABLE [dbo].[Hospital_Procedure] WITH NOCHECK
-    ADD CONSTRAINT [FK_Hospital_Procedure_Hospital] FOREIGN KEY ([Hospital_ID]) REFERENCES [dbo].[Hospital] ([Hospital_ID]);
-
-
-GO
-PRINT N'Creating Foreign Key [dbo].[FK_Hospital_Procedure_Procedure]...';
-
-
-GO
-ALTER TABLE [dbo].[Hospital_Procedure] WITH NOCHECK
-    ADD CONSTRAINT [FK_Hospital_Procedure_Procedure] FOREIGN KEY ([Procedure_ID]) REFERENCES [dbo].[Medical_Procedure] ([Procedure_ID]);
 
 
 GO
@@ -457,33 +211,6 @@ ALTER TABLE [dbo].[Insurance_Policy] WITH NOCHECK
 
 
 GO
-PRINT N'Creating Foreign Key [dbo].[FK_Policy_Insurer]...';
-
-
-GO
-ALTER TABLE [dbo].[Insurance_Policy] WITH NOCHECK
-    ADD CONSTRAINT [FK_Policy_Insurer] FOREIGN KEY ([Insurer_ID]) REFERENCES [dbo].[Insurer] ([Insurer_ID]);
-
-
-GO
-PRINT N'Creating Foreign Key [dbo].[FK_City_Insurer]...';
-
-
-GO
-ALTER TABLE [dbo].[Insurer] WITH NOCHECK
-    ADD CONSTRAINT [FK_City_Insurer] FOREIGN KEY ([City_ID]) REFERENCES [dbo].[City] ([City_ID]);
-
-
-GO
-PRINT N'Creating Foreign Key [dbo].[FK_Province_Insurer]...';
-
-
-GO
-ALTER TABLE [dbo].[Insurer] WITH NOCHECK
-    ADD CONSTRAINT [FK_Province_Insurer] FOREIGN KEY ([Province_ID]) REFERENCES [dbo].[Province] ([Province_ID]);
-
-
-GO
 PRINT N'Creating Foreign Key [dbo].[FK_MedicalReport_Patient]...';
 
 
@@ -493,129 +220,30 @@ ALTER TABLE [dbo].[Medical_Report] WITH NOCHECK
 
 
 GO
-PRINT N'Creating Foreign Key [dbo].[FK_MedicalReport_Physician]...';
+PRINT N'Creating Foreign Key [dbo].[FK_City_Patient]...';
 
 
 GO
-ALTER TABLE [dbo].[Medical_Report] WITH NOCHECK
-    ADD CONSTRAINT [FK_MedicalReport_Physician] FOREIGN KEY ([Physician_ID]) REFERENCES [dbo].[Physician] ([Physician_ID]);
+ALTER TABLE [dbo].[Patient] WITH NOCHECK
+    ADD CONSTRAINT [FK_City_Patient] FOREIGN KEY ([City_ID]) REFERENCES [dbo].[City] ([City_ID]);
 
 
 GO
-PRINT N'Creating Foreign Key [dbo].[FK_MedicalReport_Hospital]...';
+PRINT N'Creating Foreign Key [dbo].[FK_Gender_Patient]...';
 
 
 GO
-ALTER TABLE [dbo].[Medical_Report] WITH NOCHECK
-    ADD CONSTRAINT [FK_MedicalReport_Hospital] FOREIGN KEY ([Hospital_ID]) REFERENCES [dbo].[Hospital] ([Hospital_ID]);
+ALTER TABLE [dbo].[Patient] WITH NOCHECK
+    ADD CONSTRAINT [FK_Gender_Patient] FOREIGN KEY ([Gender]) REFERENCES [dbo].[Gender] ([Gender_ID]);
 
 
 GO
-PRINT N'Creating Foreign Key [dbo].[FK_MedicalReport_MedicalCondition]...';
+PRINT N'Creating Foreign Key [dbo].[FK_Province_Patient]...';
 
 
 GO
-ALTER TABLE [dbo].[Medical_Report] WITH NOCHECK
-    ADD CONSTRAINT [FK_MedicalReport_MedicalCondition] FOREIGN KEY ([MedicalCondition_ID]) REFERENCES [dbo].[MedicalCondition] ([MedicalCondition_ID]);
-
-
-GO
-PRINT N'Creating Foreign Key [dbo].[FK_Medicine_MedicalCondition]...';
-
-
-GO
-ALTER TABLE [dbo].[Medicine] WITH NOCHECK
-    ADD CONSTRAINT [FK_Medicine_MedicalCondition] FOREIGN KEY ([MedicalCondition_ID]) REFERENCES [dbo].[MedicalCondition] ([MedicalCondition_ID]);
-
-
-GO
-PRINT N'Creating Foreign Key [dbo].[FK_City_Physician]...';
-
-
-GO
-ALTER TABLE [dbo].[Physician] WITH NOCHECK
-    ADD CONSTRAINT [FK_City_Physician] FOREIGN KEY ([City_ID]) REFERENCES [dbo].[City] ([City_ID]);
-
-
-GO
-PRINT N'Creating Foreign Key [dbo].[FK_Province_Physician]...';
-
-
-GO
-ALTER TABLE [dbo].[Physician] WITH NOCHECK
-    ADD CONSTRAINT [FK_Province_Physician] FOREIGN KEY ([Province_ID]) REFERENCES [dbo].[Province] ([Province_ID]);
-
-
-GO
-PRINT N'Creating Foreign Key [dbo].[FK_Physician_Procedure_Physician]...';
-
-
-GO
-ALTER TABLE [dbo].[Physician_Procedure] WITH NOCHECK
-    ADD CONSTRAINT [FK_Physician_Procedure_Physician] FOREIGN KEY ([Physician_ID]) REFERENCES [dbo].[Physician] ([Physician_ID]);
-
-
-GO
-PRINT N'Creating Foreign Key [dbo].[FK_Physician_Procedure_Procedure]...';
-
-
-GO
-ALTER TABLE [dbo].[Physician_Procedure] WITH NOCHECK
-    ADD CONSTRAINT [FK_Physician_Procedure_Procedure] FOREIGN KEY ([Procedure_ID]) REFERENCES [dbo].[Medical_Procedure] ([Procedure_ID]);
-
-
-GO
-PRINT N'Creating Foreign Key [dbo].[FK_Physician_Spec_Physician]...';
-
-
-GO
-ALTER TABLE [dbo].[Physician_Specilization] WITH NOCHECK
-    ADD CONSTRAINT [FK_Physician_Spec_Physician] FOREIGN KEY ([Physician_ID]) REFERENCES [dbo].[Physician] ([Physician_ID]);
-
-
-GO
-PRINT N'Creating Foreign Key [dbo].[FK_Physician_Spec_Specialization]...';
-
-
-GO
-ALTER TABLE [dbo].[Physician_Specilization] WITH NOCHECK
-    ADD CONSTRAINT [FK_Physician_Spec_Specialization] FOREIGN KEY ([Specialization_ID]) REFERENCES [dbo].[Specialization] ([Specialization_ID]);
-
-
-GO
-PRINT N'Creating Foreign Key [dbo].[FK_Prescription_Report]...';
-
-
-GO
-ALTER TABLE [dbo].[Prescription] WITH NOCHECK
-    ADD CONSTRAINT [FK_Prescription_Report] FOREIGN KEY ([Report_ID]) REFERENCES [dbo].[Medical_Report] ([Report_ID]);
-
-
-GO
-PRINT N'Creating Foreign Key [dbo].[FK_Prescription_Medicine]...';
-
-
-GO
-ALTER TABLE [dbo].[Prescription] WITH NOCHECK
-    ADD CONSTRAINT [FK_Prescription_Medicine] FOREIGN KEY ([Medicine_ID]) REFERENCES [dbo].[Medicine] ([Medicine_ID]);
-
-
-GO
-PRINT N'Creating Foreign Key [dbo].[FK_Report_Procedure_Procedure]...';
-
-
-GO
-ALTER TABLE [dbo].[Report_Procedure] WITH NOCHECK
-    ADD CONSTRAINT [FK_Report_Procedure_Procedure] FOREIGN KEY ([Procedure_ID]) REFERENCES [dbo].[Medical_Procedure] ([Procedure_ID]);
-
-
-GO
-PRINT N'Creating Foreign Key [dbo].[FK_Report_Procedure_Report]...';
-
-
-GO
-ALTER TABLE [dbo].[Report_Procedure] WITH NOCHECK
-    ADD CONSTRAINT [FK_Report_Procedure_Report] FOREIGN KEY ([Report_ID]) REFERENCES [dbo].[Medical_Report] ([Report_ID]);
+ALTER TABLE [dbo].[Patient] WITH NOCHECK
+    ADD CONSTRAINT [FK_Province_Patient] FOREIGN KEY ([Province_ID]) REFERENCES [dbo].[Province] ([Province_ID]);
 
 
 GO
@@ -633,56 +261,64 @@ Post-Deployment Script Template
 
 MERGE INTO Patient AS Target
 USING (VALUES
-	(1, '','','','',1,1,'','')
+    (1,'Michael'	,'Scott'	 ,'1-Jan-1960', 1 , 3 , 8 , '+1-5123838733' , '+1-3783746284'),
+    (2,'Rachel'	,'Green'	 ,'1-Jan-1965', 2 , 5 , 2 , '+1-2172187349' , '+1-8736746789'),
+    (3,'Jim'	    ,'Halpert'	 ,'1-Jan-1983', 1 , 8 , 1 , '+1-9374623522' , '+1-7641827367'),
+    (4,'Joseph'	,'Tribbiani' ,'1-Jan-1973', 1 , 4 , 5 , '+1-2367245625' , '+1-7637571299'),
+    (5,'Sheldon'	,'Cooper'	 ,'1-Jan-1970', 1 , 1 , 3 , '+1-2685945979' , '+1-7863527384'),
+    (6,'William'	,'Watson'	 ,'1-Jan-1979', 1 , 7 , 7 , '+1-2828637451' , '+1-7386957466'),
+    (7,'Betty'	,'Wallaker'	 ,'1-Jan-1961', 2 , 8 , 2 , '+1-8738263548' , '+1-7762535647'),
+    (8,'Monica'	,'Geller'	 ,'1-Jan-1982', 2 , 3 , 3 , '+1-8759984376' , '+1-1873847874'),
+    (9,'Ryan'		,'Hoffman'	 ,'1-Jan-1979', 1 , 8 , 7 , '+1-6565235351' , '+1-6236794579'),
+    (10,'David'	,'West'		 ,'1-Jan-1982', 1 , 6 , 6 , '+1-2388659865' , '+1-3242767568')
 )
 AS Source (
-			[Patient_ID],
-			[First_Name],
-			[Last_Name],
-			[Date_of_birth],
-			[Gender],
-			[City_ID],
-			[Province_ID],
-			[Primary_Contact],
-			[Secondary_Contact]
-		  )
+            [Patient_ID],
+            [First_Name],
+            [Last_Name],
+            [Date_of_birth],
+            [Gender],
+            [City_ID],
+            [Province_ID],
+            [Primary_Contact],
+            [Secondary_Contact]
+          )
 
 ON Source.[Patient_ID] = Target.[Patient_ID]
 
 WHEN MATCHED THEN
 UPDATE SET [First_Name]			= Source.[First_Name],
-		   [Last_Name]			= Source.[Last_Name],
-		   [Date_of_birth]		= Source.[Date_of_birth],
-		   [Gender]				= Source.[Gender],
-		   [City_ID]			= Source.[City_ID],
-		   [Province_ID]		= Source.[Province_ID],
-		   [Primary_Contact]	= Source.[Primary_Contact],
-		   [Secondary_Contact]	= Source.[Secondary_Contact]
+           [Last_Name]			= Source.[Last_Name],
+           [Date_of_birth]		= Source.[Date_of_birth],
+           [Gender]				= Source.[Gender],
+           [City_ID]			= Source.[City_ID],
+           [Province_ID]		= Source.[Province_ID],
+           [Primary_Contact]	= Source.[Primary_Contact],
+           [Secondary_Contact]	= Source.[Secondary_Contact]
 
 WHEN NOT MATCHED BY Target THEN
 INSERT (
-		[Patient_ID],
-		[First_Name],
-		[Last_Name],
-		[Date_of_birth],
-		[Gender],
-		[City_ID],
-		[Province_ID],
-		[Primary_Contact],
-		[Secondary_Contact]
-		)
+        [First_Name],
+        [Last_Name],
+        [Date_of_birth],
+        [Gender],
+        [City_ID],
+        [Province_ID],
+        [Primary_Contact],
+        [Secondary_Contact]
+        )
 
-		VALUES
-		(
-		Source.[First_Name],
-		Source.[Last_Name],
-		Source.[Date_of_birth],
-		Source.[Gender],
-		Source.[City_ID],
-		Source.[Province_ID],
-		Source.[Primary_Contact],
-		Source.[Secondary_Contact]
-		)
+        VALUES
+        (
+        Source.[First_Name],
+        Source.[Last_Name],
+        Source.[Date_of_birth],
+        Source.[Gender],
+        Source.[City_ID],
+        Source.[Province_ID],
+        Source.[Primary_Contact],
+        Source.[Secondary_Contact]
+        )
 
 WHEN NOT MATCHED BY Source THEN
 DELETE;
@@ -690,7 +326,15 @@ DELETE;
 GO
 MERGE INTO City AS Target
 USING (VALUES
-	(1, '')
+	(1, 'Montreal'),
+	(2, 'Quebec City'),
+	(3, 'Ottawa'),
+	(4, 'Toronto'),
+	(5, 'Vancouver'),
+	(6, 'Calgary'),
+	(7, 'London'),
+	(8, 'Hamilton'),
+	(9, 'Edmonton')
 )
 AS Source (
 			[City_ID],
@@ -704,12 +348,10 @@ UPDATE SET [City_Name] = Source.[City_Name]
 
 WHEN NOT MATCHED BY Target THEN
 INSERT (
-		[City_ID],
 		[City_Name]
 		)
 		VALUES
 		(
-		Source.[City_ID],
 		Source.[City_Name]
 		)
 
@@ -719,7 +361,12 @@ DELETE;
 GO
 MERGE INTO Gender AS Target
 USING (VALUES
-	(1, '')
+	(1, 'Male'),
+	(2, 'Female'),
+	(3, 'Gay/Non-Binary'),
+	(4, 'Lesbian/Non-Binary'),
+	(5, 'Bisexual'),
+	(6, 'Tran-sexual')
 )
 
 AS Source (
@@ -734,12 +381,10 @@ UPDATE SET [Gender_Name] = Source.[Gender_Name]
 
 WHEN NOT MATCHED BY Target THEN
 INSERT (
-		[Gender_ID],
 		[Gender_Name]
 		)
 		VALUES
 		(
-		Source.[Gender_ID],
 		Source.[Gender_Name]
 		)
 
@@ -749,9 +394,14 @@ DELETE;
 GO
 MERGE INTO Hospital AS Target
 USING (VALUES
-    (1, '',1,1,'')
+    (1, 'Montreal General Hospital' , 1, 1, '+1-5149341934'),
+    (2, 'Jean Talon Hospital'       , 1, 1, '+1-5144956767'),
+    (3, 'Royal Victoria Hospital'   , 1, 1, '+1-5149341934'),
+    (4, 'Toronto General Hospital'  , 4, 2, '+1-4163403131'),
+    (5, 'Vancouver General Hospital', 5, 6, '+1-6048754111')
 )
-AS Source ([Hospital_ID],
+AS Source (
+           [Hospital_ID],
            [Hospital_Name],
            [City_ID],
            [Province_ID],
@@ -767,14 +417,14 @@ UPDATE SET [Hospital_Name] = Source.[Hospital_Name],
            [Contact]	   = Source.[Contact]
 
 WHEN NOT MATCHED BY Target THEN
-INSERT ([Hospital_ID],
+INSERT (
         [Hospital_Name],
         [City_ID],
         [Province_ID],
         [Contact]
        )
         VALUES
-        (Source.[Hospital_ID],
+        (
         Source.[Hospital_Name],
         Source.[City_ID],
         Source.[Province_ID],
@@ -787,9 +437,14 @@ DELETE;
 GO
 MERGE INTO Hospital_Physician AS Target
 USING (VALUES
-    (1, 1,'2022-Jan-10')
+    (1	,1	,'2022-Jan-01'),
+    (2	,3	,'2019-Jul-01'),
+    (3	,5	,'2017-Dec-15'),
+    (4	,4	,'2022-Mar-20'),
+    (5	,2	,'2008-Sep-24')
 )
-AS Source ([Hospital_ID],
+AS Source (
+           [Hospital_ID],
            [Physician_ID],
            [Employment_Start_Date]
           )
@@ -801,7 +456,8 @@ WHEN MATCHED THEN
 UPDATE SET [Employment_Start_Date] = Source.[Employment_Start_Date]
 
 WHEN NOT MATCHED BY Target THEN
-INSERT ( [Hospital_ID],
+INSERT (
+         [Hospital_ID],
          [Physician_ID],
          [Employment_Start_Date]
        )
@@ -818,7 +474,31 @@ DELETE;
 GO
 MERGE INTO Hospital_Procedure AS Target
 USING (VALUES
-    (1, 1)
+    (1,	1),
+    (2,	1),
+    (3,	1),
+    (4,	1),
+    (5,	1),
+    (1,	2),
+    (2,	2),
+    (3,	2),
+    (4,	2),
+    (5,	2),
+    (1,	3),
+    (2,	3),
+    (3,	3),
+    (4,	3),
+    (5,	3),
+    (1,	4),
+    (2,	4),
+    (3,	4),
+    (4,	4),
+    (5,	4),
+    (1,	5),
+    (2,	5),
+    (3,	5),
+    (4,	5),
+    (5,	5)
 )
 AS Source (
             [Hospital_ID],
@@ -844,7 +524,16 @@ DELETE;
 GO
 MERGE INTO Insurance_Policy AS Target
 USING (VALUES
-    (1, '',1,1,'2022-Jan-1','2022-Dec-31','')
+       (1	,'D267488' ,4	,1 , '2016-Mar-03' , '2024-Mar-03' , NULL),
+       (2	,'F555422' ,7	,5 , '2000-Sep-14' , '2009-Sep-14' , NULL),
+       (3	,'G874979' ,5	,4 , '2015-Jun-04' , '2021-Jun-04' , NULL),
+       (4	,'A348389' ,6	,2 , '2017-Sep-07' , '2021-Sep-07' , NULL),
+       (5	,'D277878' ,2	,5 , '2012-Oct-06' , '2020-Apr-07' , NULL),
+       (6	,'D349719' ,9	,3 , '2010-Oct-06' , '2016-Oct-06' , NULL),
+       (7	,'A978723' ,1	,3 , '2000-Aug-09' , '2013-Nov-21' , NULL),
+       (8	,'A984376' ,8	,1 , '2015-Feb-15' , '2022-Feb-15' , NULL),
+       (9	,'F989768' ,10	,4 , '2013-Sep-17' , '2018-Sep-17' , NULL),
+       (10  ,'F399928' ,3	,1 , '2018-Dec-12' , '2023-Dec-12' , NULL)
 )
 AS Source (
            [Policy_ID],
@@ -868,7 +557,6 @@ UPDATE SET [Policy_Reference_Number] = Source.[Policy_Reference_Number],
 
 WHEN NOT MATCHED BY Target THEN
 INSERT (
-        [Policy_ID],
         [Policy_Reference_Number],
         [Patient_ID],
         [Insurer_ID],
@@ -878,7 +566,6 @@ INSERT (
        )
         VALUES
         (
-        Source.[Policy_ID],
         Source.[Policy_Reference_Number],
         Source.[Patient_ID],
         Source.[Insurer_ID],
@@ -893,7 +580,11 @@ DELETE;
 GO
 MERGE INTO Insurer AS Target
 USING (VALUES
-    (1, '',1,1,'')
+    (1, 'Blue Cross Canada'         , 3, 9, '+1-8236784365'),
+    (2, 'Sun Life Assurance Company', 7, 2, '+1-6474588732'),
+    (3, 'Green Shield Canada'       , 4, 1, '+1-2873778658'),
+    (4, 'Manulife'                  , 6, 3, '+1-3873674653'),
+    (5, 'Group Medical Services'    , 8, 2, '+1-8738647293')
 )
 AS Source (
            [Insurer_ID],
@@ -913,7 +604,6 @@ UPDATE SET [Insurer_Name]	= Source.[Insurer_Name],
 
 WHEN NOT MATCHED BY Target THEN
 INSERT (
-        [Insurer_ID],
         [Insurer_Name],
         [City_ID],
         [Province_ID],
@@ -921,7 +611,6 @@ INSERT (
        )
         VALUES
         (
-        Source.[Hospital_ID],
         Source.[Insurer_Name],
         Source.[City_ID],
         Source.[Province_ID],
@@ -934,27 +623,33 @@ DELETE;
 GO
 MERGE INTO Medical_Procedure AS Target
 USING (VALUES
-	(1, '')
+	(1, 'Transplant'		, CAST(10000.00  AS Decimal(10, 2))),
+	(2, 'Chemotherapy'		, CAST(67000.00  AS Decimal(10, 2))),
+	(3, 'Radiation'			, CAST(77000.00  AS Decimal(10, 2))),
+	(4, 'Cryoablation'		, CAST(112000.00 AS Decimal(10, 2))),
+	(5, 'Hormone Therapy'	, CAST(90000.00  AS Decimal(10, 2)))
 )
 AS Source (
 			[Procedure_ID],
-		    [Procedure_Name]
+		    [Procedure_Name],
+			[Procedure_Cost]
 		  )
 
 ON Source.[Procedure_ID] = Target.[Procedure_ID]
 
 WHEN MATCHED THEN
-UPDATE SET [Procedure_Name] = Source.[Procedure_Name]
+UPDATE SET [Procedure_Name] = Source.[Procedure_Name],
+		   [Procedure_Cost] = Source.[Procedure_Cost]
 
 WHEN NOT MATCHED BY Target THEN
 INSERT (
-		[Procedure_ID],
-		[Procedure_Name]
+		[Procedure_Name],
+		[Procedure_Cost]
 		)
 		VALUES
 		(
-		Source.[Procedure_ID],
-		Source.[Procedure_Name]
+		Source.[Procedure_Name],
+		Source.[Procedure_Cost]
 		)
 
 WHEN NOT MATCHED BY Source THEN
@@ -962,43 +657,59 @@ DELETE;
 GO
 MERGE INTO Medical_Report AS Target
 USING (VALUES
-    (1,1, '2022-Jan-1',1,1,'Y')
+    ( 1,   '12-Dec-2006'	,1	,1	,3	,3	,1	),
+    ( 2,   '06-Aug-2014'	,1	,2	,5	,4	,2	),
+    ( 3,   '01-May-2022'	,1	,3	,2	,5	,1	),
+    ( 4,   '04-Apr-2019'	,1	,4	,2	,1	,1	),
+    ( 5,   '02-Mar-2019'	,0	,4	,2	,1	,5	),
+    ( 6,   '05-Sep-2018'	,1	,5	,4	,5	,4	),
+    ( 7,   '09-Mar-2020'	,1	,6	,3	,4	,2	),
+    ( 8,   '04-Aug-2018'	,1	,6	,4	,1	,3	),
+    ( 9,   '09-May-2020'	,0	,6	,1	,1	,4	),
+    ( 10,  '05-Feb-2019'	,1	,7	,1	,5	,1	),
+    ( 11,  '02-Mar-2017'	,1	,8	,3	,3	,5	),
+    ( 12,  '12-Jun-2005'	,1	,9	,2	,3	,2	),
+    ( 13,  '11-May-2015'	,1	,10	,1	,3	,5	),
+    ( 14,  '10-Apr-2014'	,1	,10	,3	,2	,3	),
+    ( 15,  '03-Jul-2014'	,1	,10	,3	,2	,1	)
 )
 AS Source (
             [Report_ID],
-            [Patient_ID],
             [Report_Date],
+            [IsValid],
+            [Patient_ID],
+            [MedicalCondition_ID],
             [Physician_ID],
-            [Hospital_ID],
-            [IsValid]
+            [Hospital_ID]
            )
 
 ON Source.[Report_ID] = Target.[Report_ID]
 
 WHEN MATCHED THEN
 UPDATE SET
-            [Patient_ID]	= Source.[Patient_ID],
-            [Report_Date]	= Source.[Report_Date],
-            [Physician_ID]	= Source.[Physician_ID],
-            [Hospital_ID]	= Source.[Hospital_ID],
-            [IsValid]		= Source.[IsValid]
+            [Patient_ID]	        = Source.[Patient_ID],
+            [Report_Date]	        = Source.[Report_Date],
+            [Physician_ID]	        = Source.[Physician_ID],
+            [MedicalCondition_ID]	= Source.[MedicalCondition_ID],
+            [Hospital_ID]	        = Source.[Hospital_ID],
+            [IsValid]		        = Source.[IsValid]
 
 WHEN NOT MATCHED BY Target THEN
 INSERT (
-        [Report_ID],
         [Patient_ID],
         [Report_Date],
         [Physician_ID],
         [Hospital_ID],
+        [MedicalCondition_ID],
         [IsValid]
        )
         VALUES
         (
-        Source.[Report_ID],
         Source.[Patient_ID],
         Source.[Report_Date],
         Source.[Physician_ID],
         Source.[Hospital_ID],
+        Source.[MedicalCondition_ID],
         Source.[IsValid]
         )
 
@@ -1008,7 +719,11 @@ DELETE;
 GO
 MERGE INTO Medicine AS Target
 USING (VALUES
-	(1, '','','','','')
+(1 , 'Paracip'			, 'Paracetamol/ Acetaminophen'													,2  ,'Skin rash or dermatitis', 'Shake well before use.'					  ,4  , 500.00),
+(2 , 'Digene'			, 'Dries Aluminium Hydroxide, Magnesium Aluminium Silicate Hydrate, Simethicone',5  ,'Dizziness'			  , 'Keep out of childrens reach'				  ,1  , 880.00),
+(3 , 'Voliniused'		, 'Diclofenac diethylamine BP, Linseed Oil BP (Oleum Lini), methyl salicylate'	,4  ,'Headache'				  , '1 tablet for children. 2 tablets for adults.',5  , 233.60),
+(4 , 'Vomikind'			, 'Ondansetron'																	,1  ,'Insomnia'				  , 'Don’t consume if allergic to nuts'			  ,3  , 129.90),
+(5 , 'Albuterol Sulfate', 'Anisodamine'																	,5  ,'Nausea'				  , 'Shake well before use.'					  ,2  , 45.00 )
 )
 AS Source (
 			[Medicine_ID],
@@ -1016,36 +731,42 @@ AS Source (
 			[Composition],
 			[Potency],
 			[Side_Effects],
-			[Comments]
+			[Comments],
+			[MedicalCondition_ID],
+			[Med_Price]
 		  )
 
 ON Source.[Medicine_ID] = Target.[Medicine_ID]
 
 WHEN MATCHED THEN
-UPDATE SET [Medicine_Name]	= Source.[Medicine_Name],
-		   [Composition]	= Source.[Composition],
-		   [Potency]		= Source.[Potency],
-		   [Side_Effects]	= Source.[Side_Effects],
-		   [Comments]		= Source.[Comments]
+UPDATE SET [Medicine_Name]			= Source.[Medicine_Name],
+		   [Composition]			= Source.[Composition],
+		   [Potency]				= Source.[Potency],
+		   [Side_Effects]			= Source.[Side_Effects],
+		   [Comments]				= Source.[Comments],
+		   [MedicalCondition_ID]	= Source.[MedicalCondition_ID],
+		   [Med_Price]				= Source.[Med_Price]
 
 WHEN NOT MATCHED BY Target THEN
 INSERT (
-		[Medicine_ID],
 		[Medicine_Name],
 		[Composition],
 		[Potency],
 		[Side_Effects],
-		[Comments]
+		[Comments],
+		[MedicalCondition_ID],
+		[Med_Price]
 		)
 
 		VALUES
 		(
-		Source.[Medicine_ID],
 		Source.[Medicine_Name],
 		Source.[Composition],
 		Source.[Potency],
 		Source.[Side_Effects],
-		Source.[Comments]
+		Source.[Comments],
+		Source.[MedicalCondition_ID],
+		Source.[Med_Price]
 		)
 
 WHEN NOT MATCHED BY Source THEN
@@ -1062,61 +783,15 @@ USE [$(DatabaseName)];
 
 
 GO
-ALTER TABLE [dbo].[Patient] WITH CHECK CHECK CONSTRAINT [FK_Gender_Patient];
-
-ALTER TABLE [dbo].[Patient] WITH CHECK CHECK CONSTRAINT [FK_City_Patient];
-
-ALTER TABLE [dbo].[Patient] WITH CHECK CHECK CONSTRAINT [FK_Province_Patient];
-
-ALTER TABLE [dbo].[Hospital] WITH CHECK CHECK CONSTRAINT [FK_City_Hospital];
-
-ALTER TABLE [dbo].[Hospital] WITH CHECK CHECK CONSTRAINT [FK_Province_Hospital];
-
-ALTER TABLE [dbo].[Hospital_Physician] WITH CHECK CHECK CONSTRAINT [FK_Hospital_Physician_Hospital];
-
-ALTER TABLE [dbo].[Hospital_Physician] WITH CHECK CHECK CONSTRAINT [FK_Hospital_Physician_Physician];
-
-ALTER TABLE [dbo].[Hospital_Procedure] WITH CHECK CHECK CONSTRAINT [FK_Hospital_Procedure_Hospital];
-
-ALTER TABLE [dbo].[Hospital_Procedure] WITH CHECK CHECK CONSTRAINT [FK_Hospital_Procedure_Procedure];
-
 ALTER TABLE [dbo].[Insurance_Policy] WITH CHECK CHECK CONSTRAINT [FK_Policy_Patient];
-
-ALTER TABLE [dbo].[Insurance_Policy] WITH CHECK CHECK CONSTRAINT [FK_Policy_Insurer];
-
-ALTER TABLE [dbo].[Insurer] WITH CHECK CHECK CONSTRAINT [FK_City_Insurer];
-
-ALTER TABLE [dbo].[Insurer] WITH CHECK CHECK CONSTRAINT [FK_Province_Insurer];
 
 ALTER TABLE [dbo].[Medical_Report] WITH CHECK CHECK CONSTRAINT [FK_MedicalReport_Patient];
 
-ALTER TABLE [dbo].[Medical_Report] WITH CHECK CHECK CONSTRAINT [FK_MedicalReport_Physician];
+ALTER TABLE [dbo].[Patient] WITH CHECK CHECK CONSTRAINT [FK_City_Patient];
 
-ALTER TABLE [dbo].[Medical_Report] WITH CHECK CHECK CONSTRAINT [FK_MedicalReport_Hospital];
+ALTER TABLE [dbo].[Patient] WITH CHECK CHECK CONSTRAINT [FK_Gender_Patient];
 
-ALTER TABLE [dbo].[Medical_Report] WITH CHECK CHECK CONSTRAINT [FK_MedicalReport_MedicalCondition];
-
-ALTER TABLE [dbo].[Medicine] WITH CHECK CHECK CONSTRAINT [FK_Medicine_MedicalCondition];
-
-ALTER TABLE [dbo].[Physician] WITH CHECK CHECK CONSTRAINT [FK_City_Physician];
-
-ALTER TABLE [dbo].[Physician] WITH CHECK CHECK CONSTRAINT [FK_Province_Physician];
-
-ALTER TABLE [dbo].[Physician_Procedure] WITH CHECK CHECK CONSTRAINT [FK_Physician_Procedure_Physician];
-
-ALTER TABLE [dbo].[Physician_Procedure] WITH CHECK CHECK CONSTRAINT [FK_Physician_Procedure_Procedure];
-
-ALTER TABLE [dbo].[Physician_Specilization] WITH CHECK CHECK CONSTRAINT [FK_Physician_Spec_Physician];
-
-ALTER TABLE [dbo].[Physician_Specilization] WITH CHECK CHECK CONSTRAINT [FK_Physician_Spec_Specialization];
-
-ALTER TABLE [dbo].[Prescription] WITH CHECK CHECK CONSTRAINT [FK_Prescription_Report];
-
-ALTER TABLE [dbo].[Prescription] WITH CHECK CHECK CONSTRAINT [FK_Prescription_Medicine];
-
-ALTER TABLE [dbo].[Report_Procedure] WITH CHECK CHECK CONSTRAINT [FK_Report_Procedure_Procedure];
-
-ALTER TABLE [dbo].[Report_Procedure] WITH CHECK CHECK CONSTRAINT [FK_Report_Procedure_Report];
+ALTER TABLE [dbo].[Patient] WITH CHECK CHECK CONSTRAINT [FK_Province_Patient];
 
 
 GO
